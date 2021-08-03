@@ -1,28 +1,48 @@
-import json 
 import csv
+import pprint
+
+product_fieldnames = ['Flavour', 'Price']
+order_fieldnames = ['customer name', 'customer address', 'customer phone', 'courier', 'order status']
+courier_fieldnames = ['Name', 'Phone number']
+
 
 
 full_ice_menu = []
-with open('products.txt', 'r') as f:
-    for flavour in f.readlines():
-        full_ice_menu.append(flavour.rstrip())
+def import_products_csv():
+    with open('products.csv', 'r') as p:
+        csv_p = csv.reader(p)
+        for row in csv_p:
+            full_ice_menu.append(row)
     #print(full_ice_menu)
 
+
 couriers_list=[]
-with open('couriers.txt', 'r') as c:
-    for name in c.readlines():
-        couriers_list.append(name.rstrip())
-    #print(couriers_list)
-    
+def import_couriers_csv():
+    with open('couriers.csv', 'r') as c:
+        csv_c = csv.reader(c)
+        for row in csv_c:
+            couriers_list.append(row)
+        #print(couriers_list)
+        
+        
+orders = []
+def import_orders_csv(): 
+    global orders
+    with open('orders.csv', 'r', newline = '') as o:
+        csv_o = csv.DictReader(o, delimiter =',')
+        for row in csv_o:
+            orders.append(row)  
+        pprint.pp(orders, sort_dicts=False) 
+
+
 #My Pages
 print("Welcome to the Soho Gelateria")
-main_page = ['0) Save your changes to the text files and EXIT the app\n', '1) Product page\n', '2) Courier page', '3) Orders Dictionary']
+main_page = ['0) Save your changes to the text files and EXIT the app', '1) Product page', '2) Courier page', '3) Orders Dictionary']
 product_page = ['0) Return main menu', '1. See full gelato menu', '2. Add a new flavour ', '3. Update an existing product ', '4. Delete a product  ', '5. EXIT APP']
 courier_page= ['0) Return to main menu', '1) See couriers list', '2) Add a new courier to the list', '3) Replace a courier ', '4) Delete a courier from the list']
 order_page = ['0) Return to main menu', '1) See orders dictionary ', '2) Insert new customer order details ', '3)Update an existing status ', '4) Update an exisitng order ', '5)\Delete a courier ']
-order_status = ['pending']
+order_status = ['pending', 'posted']
 
-print('\n')
 
 def main_menu():  
     print(main_page)
@@ -39,16 +59,38 @@ def main_menu():
         print('Only one of the options given may be selected')  
 
 ## writing items to relevant files
+def save_product_csv():
+    with open('products.csv', 'w') as product_file:
+        writer = csv.Dictreader(product_file, fieldname = product_fieldnames)
+        writer.writeheader()
+        for flavour, price in product_file:
+            writer.writerow(flavour, price)
+        #for flavour in full_ice_menu:
+                #product_file.write(flavour, '\t')
+
+
+def save_courier_csv():
+    with open('couriers.csv', 'w') as courier_file:
+        writer = csv.Dictreader(courier_file, fieldname = courier_fieldnames)
+        writer.writeheader()
+        for name ,number in courier_file:
+            writer.writerow(name, number)
+        #for name in couriers_list:
+            # courier_file.write(name, '\t')
+
+
+###check this function
 def save_p_c():
-    
-    with open('products.txt', 'w') as product_file:
+    with open('products.csv', 'w') as product_file:
         for flavour in full_ice_menu:
                 product_file.write(flavour, '\t')
-
+                
     with open('couriers.txt', 'w') as courier_file:
         for name in couriers_list:
                 courier_file.write(name, '\t')
-
+                
+    
+    
         
 #PRODucTS MENU  
 
@@ -61,15 +103,16 @@ def product_menu():
         main_menu()
         
     elif product_input == '1':
-        print(full_ice_menu)
-        return product_menu()
+        for row in full_ice_menu:
+            print(row[0], row[1])
+        product_menu()
             
     elif product_input == '2':
         #for flavour in full_ice_menu: 
             create_flavour = str(input(f'Insert name of new flavour:   '))
             full_ice_menu.append(create_flavour)
             print(full_ice_menu[-1])
-            return product_menu()
+            product_menu()
             
     elif product_input == '3':
         for (i, flavour) in enumerate(full_ice_menu, start=0):
@@ -81,8 +124,7 @@ def product_menu():
             print(full_ice_menu[old_flavour])
         else:
             print('Invalid number- Please select a flavour from the menu.')
-                
-        return product_menu()
+            product_menu()
         
 
     elif product_input == '4':
@@ -91,8 +133,7 @@ def product_menu():
             print(i, flavour) 
         delete_flavour = int(input('Type in number to be deleted'))
         del full_ice_menu[delete_flavour]  
-        
-        return product_menu()
+        product_menu()
 
     
 
@@ -106,13 +147,13 @@ def courier_menu():
         
     elif courier_input == '1':
         print(couriers_list)
-        return courier_menu()
+        courier_menu()
             
     elif courier_input == '2':
         new_name = str(input('Insert name of new courier  '))
         couriers_list.append(new_name)
         print(couriers_list[-1])
-        return courier_menu()
+        courier_menu()
 
     elif courier_input == '3':
         for (i, name) in enumerate(couriers_list, start = 0):
@@ -126,7 +167,7 @@ def courier_menu():
             print('Invalid ID- Please select a courier ID from the menu.')
             return old_name
         
-        return courier_menu()
+        courier_menu()
 
     elif courier_input == '4':
         print('Delete a name from the list below.')
@@ -134,24 +175,11 @@ def courier_menu():
             print(i, name) 
         delete_name = int(input('Type in ID number of courier to be deleted'))
         del couriers_list[delete_name]  
-        return courier_menu()
+        courier_menu()
 
 
 
 ####Order menu
-
-def read_orders_json(): 
-    orders = []
-    global orders
-    with open ("orders.json") as ordersf:
-        #current_orders = ordersf.read()
-        #print(current_orders)
-        current_orders = json.load(ordersf)
-        #order.close()
-        orders.append(current_orders)      
-        print(orders)
-
-    
     
 def new_order(): 
     new_customer = {}
@@ -172,111 +200,113 @@ def new_order():
     
     print(new_customer)
     ##look here
-    for orders in read_orders_json():
-        if new_customer.copy() == True:
-            orders.append(new_customer)
-            with open ('Mini Projects\orders.json', 'w') as ordersf:
-                for new_customer in orders:
-                    ordersf.write(f'{new_customer}\n')
+    #for orders in import_orders_csv():
+    with open ('orders.csv', 'w') as ordersf:
+        nc = csv.DictWriter(ordersf, order_fieldnames)
+        #nc = csv.DictWriter(ordersf, new_customer.keys())
+        nc.writeheader()
+        nc.writerow(new_customer)
+        #orders.append(new_customer)
+        #for new_customer in orders:
+            #ordersf.write(f'{new_customer}\n')
 
 
 def update_order():
-    orders = read_orders_json()
+    orders = import_orders_csv()
     
-    for orders in read_orders_json():
-        for (i, order) in enumerate(orders):
-            print(i, order)
-        
-        for customer_id in orders:
-            customer_id = int(input('Please input the customer id of the order you would like to update:  '))
-        
-            if customer_id > len(orders):
-                print('This user_id is invalid')
-            else:    #####unsure about  below
-                change_order = True
-                print(orders[customer_id], start=0)
-                
-                while change_order:
+    for (i, order) in enumerate(orders):
+        print(i, order)
     
-                    change_field = int(input('\nWhich field would you like to update?\n'
-                                                '1) customer name\n'
-                                                '2) customer address\n'
-                                                '3) Phone number\n'
-                                                '4) Courier\n'
-                                                '5) Order status\n'
-                                                '6) Return to Main menu\n'))
-                    
-                    if change_field == 1:
-                        new_update = input('Update with new name:')
-                        orders["customer name"] = new_update
-                        print('Customer name ' + orders[customer_id]["customer name"] + f'has been updated to {new_update}')
-                    
-                    elif change_field == 2:
-                        print(orders[customer_id]["customer address"])
-                        new_update = input('Insert the number of the address field you\'d like to update: ''\n'
-                                            '1) house number''\n'
-                                            '2) street name ''\n'
-                                            '3) City ''\n'
-                                            '4) Postcode'' \n'
-                                            '5) Country''\n' )
-                        
-                        while new_update<=5 and  new_update>=1:
-                            if new_update == 1:
-                                new_house_number = input('New house number: ')
-                                #orders["customer address"["house number"]] = new_house_number
-                                orders["customer address"].update({"house number" : new_house_number}) 
-                            elif new_update == 2:
-                                new_street_name = str(input('Enter new street name: '))
-                                #orders["customer address"["street name"]] = new_street_name
-                                orders["customer address"].update({"street name" : new_street_name}) 
-                            
-                            elif new_update == 3:
-                                new_city = str(input('Enter your new city: '))
-                                #orders["customer address"["City"]] = new_city
-                                orders["customer address"].update({"City" : new_city}) 
-                            
-                            elif new_update == 4:
-                                new_postcode = str(input('Enter new postcode: '))
-                                #orders["customer address"["Postcode"]] = new_postcode
-                                orders["customer address"].update({"Postcode" : new_postcode}) 
-                            
-                            elif new_update == 5:
-                                new_country = str(input('Enter new country: '))
-                                #orders["customer address"["Country"]] = new_country
-                                orders["customer address"].update({"Country" : new_country}) 
-                            
-                            else:
-                                pass
-                                                        
-                            
-                        print('The customer address for ' + orders[customer_id]["customer name"] + f'has been updated to {orders["customer address"]}')
+    for customer_id in orders:
+        customer_id = int(input('Please input the customer id of the order you would like to update:  '))
+    
+        if customer_id > len(orders):
+            print('This user_id is invalid')
+        else:    #####unsure about  below
+            change_order = True
+            print(orders[customer_id], start=0)
             
+            while change_order:
+
+                change_field = int(input('\nWhich field would you like to update?\n'
+                                            '1) customer name\n'
+                                            '2) customer address\n'
+                                            '3) Phone number\n'
+                                            '4) Courier\n'
+                                            '5) Order status\n'
+                                            '6) Return to Main menu\n'))
+                
+                if change_field == 1:
+                    new_update = input('Update with new name:')
+                    orders["customer name"] = new_update
+                    print('Customer name ' + orders[customer_id]["customer name"] + f'has been updated to {new_update}')
+                
+                elif change_field == 2:
+                    print(orders[customer_id]["customer address"])
+                    new_update = input('Insert the number of the address field you\'d like to update: ''\n'
+                                        '1) house number''\n'
+                                        '2) street name ''\n'
+                                        '3) City ''\n'
+                                        '4) Postcode'' \n'
+                                        '5) Country''\n' )
                     
-                    elif change_field == 3:
-                        new_update = input('Update with new number:')
-                        orders["Phone number"] = new_update
-                        print('The customer phone number for ' + orders[customer_id]["customer name"] + f'has been updated to {new_update}')
-                    
-                    
-                    elif change_field == 4:
-                        print(couriers_list)
-                        new_update = input('Update with new courier from list above:')
-                        orders["Courier"] = new_update
-                        print('The courier for ' + orders[customer_id]["customer name"] + f'has been updated to {new_update}')
-                    
-                    
-                    elif change_field == 5:
-                        new_update = input('Update order status: ')
-                        orders["Order status"] = new_update
-                        print(f'Order status has been updated to {new_update}')
-                    
-                    
-                    elif change_field == 6:
-                        return main_menu()
-                    
-                    else:
-                        print('Invalid Selection, try again')
-                        return update_order()
+                    while new_update<=5 and  new_update>=1:
+                        if new_update == 1:
+                            new_house_number = input('New house number: ')
+                            #orders["customer address"["house number"]] = new_house_number
+                            orders["customer address"].update({"house number" : new_house_number}) 
+                        elif new_update == 2:
+                            new_street_name = str(input('Enter new street name: '))
+                            #orders["customer address"["street name"]] = new_street_name
+                            orders["customer address"].update({"street name" : new_street_name}) 
+                        
+                        elif new_update == 3:
+                            new_city = str(input('Enter your new city: '))
+                            #orders["customer address"["City"]] = new_city
+                            orders["customer address"].update({"City" : new_city}) 
+                        
+                        elif new_update == 4:
+                            new_postcode = str(input('Enter new postcode: '))
+                            #orders["customer address"["Postcode"]] = new_postcode
+                            orders["customer address"].update({"Postcode" : new_postcode}) 
+                        
+                        elif new_update == 5:
+                            new_country = str(input('Enter new country: '))
+                            #orders["customer address"["Country"]] = new_country
+                            orders["customer address"].update({"Country" : new_country}) 
+                        
+                        else:
+                            pass
+                                                    
+                        
+                    print('The customer address for ' + orders[customer_id]["customer name"] + f'has been updated to {orders["customer address"]}')
+        
+                
+                elif change_field == 3:
+                    new_update = input('Update with new number:')
+                    orders["Phone number"] = new_update
+                    print('The customer phone number for ' + orders[customer_id]["customer name"] + f'has been updated to {new_update}')
+                
+                
+                elif change_field == 4:
+                    print(couriers_list)
+                    new_update = input('Update with new courier from list above:')
+                    orders["Courier"] = new_update
+                    print('The courier for ' + orders[customer_id]["customer name"] + f'has been updated to {new_update}')
+                
+                
+                elif change_field == 5:
+                    new_update = input('Update order status: ')
+                    orders["Order status"] = new_update
+                    print(f'Order status has been updated to {new_update}')
+                
+                
+                elif change_field == 6:
+                    return main_menu()
+                
+                else:
+                    print('Invalid Selection, try again')
+                    return update_order()
 
     
 #update existing order status
@@ -291,7 +321,7 @@ def update_status():
 
 
 def del_courier():
-    orders = read_orders_json()
+    orders = import_orders_csv()
     customer_id = input('Please input the customer id of the order you would like to update:  ')
     del orders[customer_id]["Couriers"]
     print(orders[customer_id])
@@ -308,7 +338,7 @@ def orders_menu():
 
     elif order_input == '1':
         print('Your Orders are listed below')
-        read_orders_json()
+        import_orders_csv()
     
     elif order_input == '2':
         return new_order()
@@ -324,10 +354,22 @@ def orders_menu():
     
     else: 
         return IndexError
-    
+
+
+import_couriers_csv()
+import_orders_csv()
+import_products_csv()
 main_menu()
 
 
+    
+    
+    
+    
+
+    
+    
+    
 
 
 
@@ -379,68 +421,65 @@ main_menu()
 
 
 
-
-
-orders = [{
-"order_details":       
-{"customer name" : "Vinnie",
-"customer address" : {
-    "house number" : 22,
-    "street name " : "Kings Road",
-    "City" : "Woodford",
-    "Postcode" : "IG8 4JH",
-    "Country" : "United Kingdom"},
-"customer phone" : "07931538222",
-"courier" : 'gtsrgrt',
-"order status" : "Preparing"
-},
-
-"customer name" : "Frannie",
-"customer address" : {
-    "house number" : 62,
-    "street name " : "Mullens Road",
-    "City" : "Brixton",
-    "Postcode" : "SW16 5BV",
-    "Country" : "United Kingdom"},
-"customer phone" : "07991726388",
-"courier" : 'gdjhcfgbdjs',
-"order status" : "Preparing"
-},
-
-{
-"customer name" : "Jemima",
-"customer address" : {
-    "house number" : 313,
-    "street name " : "Yoxley Avenue",
-    "City" : "Ilford",
-    "Postcode" : "IG8 2BF",
-    "Country" : "United Kingdom"},
-"customer phone" : "07911927110",
-"courier" : 'null',
-"order status" : "Preparing"
-},
-{
-"customer name" : "Telisha",
-"customer address" : {
-    "house number" : 5,
-    "street name " : "Evering Road",
-    "City" : "Clapton",
-    "Postcode" : "E6 9TV",
-    "Country" : "United Kingdom"},
-"customer phone" : "07727910508",
-"courier" : 'null',
-"order status" : "Preparing"
-},
-{
-"customer name" : "Jonathon",
-"customer address" : {
-    "house number" : 19,
-    "street name " : "Church Avenue",
-    "City" : "Chelsea",
-    "Postcode" : "SW8 2FS",
-    "Country" : "United Kingdom"},
-"customer phone" : "07822012890",
-"courier" : 'null',
-"order status" : "Preparing"
-}]
-
+dict_orders = [
+            
+    {"customer name" : "Vinnie",
+    "customer address" : {
+        "house number" : 22,
+        "street name " : "Kings Road",
+        "City" : "Woodford",
+        "Postcode" : "IG8 4JH",
+        "Country" : "United Kingdom"},
+    "customer phone" : "07931538222",
+    "courier" : 'gtsrgrt',
+    "order status" : "Preparing"
+    },
+    {
+    "customer name" : "Frannie",
+    "customer address" : {
+        "house number" : 62,
+        "street name " : "Mullens Road",
+        "City" : "Brixton",
+        "Postcode" : "SW16 5BV",
+        "Country" : "United Kingdom"},
+    "customer phone" : "07991726388",
+    "courier" : 'gdjhcfgbdjs',
+    "order status" : "Preparing"
+    },
+    {
+    "customer name" : "Jemima",
+    "customer address" : {
+        "house number" : 313,
+        "street name " : "Yoxley Avenue",
+        "City" : "Ilford",
+        "Postcode" : "IG8 2BF",
+        "Country" : "United Kingdom"},
+    "customer phone" : "07911927110",
+    "courier" : 'null',
+    "order status" : "Preparing"
+    },
+    {
+    "customer name" : "Telisha",
+    "customer address" : {
+        "house number" : 5,
+        "street name " : "Evering Road",
+        "City" : "Clapton",
+        "Postcode" : "E6 9TV",
+        "Country" : "United Kingdom"},
+    "customer phone" : "07727910508",
+    "courier" : 'null',
+    "order status" : "Preparing"
+    },
+    {
+    "customer name" : "Jonathon",
+    "customer address" : {
+        "house number" : 19,
+        "street name " : "Church Avenue",
+        "City" : "Chelsea",
+        "Postcode" : "SW8 2FS",
+        "Country" : "United Kingdom"},
+    "customer phone" : "07822012890",
+    "courier" : 'null',
+    "order status" : "Preparing"
+    }
+]
